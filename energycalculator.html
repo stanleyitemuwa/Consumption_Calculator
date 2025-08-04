@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NTA Asaba - Electricity Consumption Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        .report-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+        .report-header {
+            background: linear-gradient(135deg, #10B981, #34D399); /* Green gradient */
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .editable {
+            cursor: text;
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+        .editable:hover, .editable:focus {
+            background-color: rgba(255, 255, 255, 0.2);
+            outline: none;
+        }
+        .input-field {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #10B981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+        }
+        .result-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .print-button {
+            background-color: #10B981;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .print-button:hover {
+            background-color: #059669;
+        }
+
+        /* Print-specific styles */
+        @media print {
+            body {
+                background-color: #ffffff;
+            }
+            .report-container {
+                margin: 0;
+                box-shadow: none;
+                border: 1px solid #e5e7eb;
+            }
+            .no-print {
+                display: none;
+            }
+            .report-header {
+                background: #f3f4f6 !important; /* Use a light background for printing */
+                color: #111827 !important;
+                 -webkit-print-color-adjust: exact; /* Ensures background color prints in Chrome */
+                color-adjust: exact; /* Standard */
+            }
+            .editable:hover, .editable:focus {
+                background-color: transparent;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="report-container">
+        <!-- Report Header -->
+        <div class="report-header">
+            <h1 id="report-title" contenteditable="true" class="text-3xl md:text-4xl font-bold tracking-tight editable">NTA ASABA ELECTRICITY CONSUMPTION REPORT</h1>
+        </div>
+
+        <div class="p-6 md:p-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Input Section -->
+                <div class="space-y-6">
+                    <div>
+                        <label for="initial-reading" id="label-initial" contenteditable="true" class="block font-medium text-gray-700 mb-2 editable">Initial Reading (kWh)</label>
+                        <input type="number" id="initial-reading" class="input-field" placeholder="e.g., 15000">
+                    </div>
+                    <div>
+                        <label for="final-reading" id="label-final" contenteditable="true" class="block font-medium text-gray-700 mb-2 editable">Final Reading (kWh)</label>
+                        <input type="number" id="final-reading" class="input-field" placeholder="e.g., 15500">
+                    </div>
+                </div>
+
+                <!-- Results Section -->
+                <div class="bg-gray-50 p-6 rounded-lg space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span id="label-consumption" contenteditable="true" class="font-medium text-gray-600 editable">Consumption (kWh)</span>
+                        <span id="consumption" class="result-value">0</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span id="label-energy-charge" contenteditable="true" class="font-medium text-gray-600 editable">Energy Charge</span>
+                        <span id="energy-charge" class="result-value">₦0.00</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span id="label-vat" contenteditable="true" class="font-medium text-gray-600 editable">VAT (7.5%)</span>
+                        <span id="vat" class="result-value">₦0.00</span>
+                    </div>
+                    <div class="border-t my-2"></div>
+                    <div class="flex justify-between items-center">
+                        <span id="label-total" contenteditable="true" class="font-bold text-gray-800 text-lg editable">Total Bill Amount</span>
+                        <span id="total-amount" class="result-value text-green-600 text-2xl">₦0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tariff Info and Print Button -->
+            <div class="mt-8 pt-6 border-t flex flex-col md:flex-row justify-between items-center gap-4">
+                 <div class="text-sm text-gray-500 text-center md:text-left">
+                    <p><span id="label-tariff" contenteditable="true" class="editable font-medium">Tariff:</span> ₦<span id="tariff-value" contenteditable="true" class="editable">209.50</span> per kWh</p>
+                    <p><span id="label-vat-rate" contenteditable="true" class="editable font-medium">VAT Rate:</span> <span id="vat-rate-value" contenteditable="true" class="editable">7.5</span>%</p>
+                </div>
+                <button onclick="window.print()" class="print-button no-print">
+                    Print to PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get all necessary elements from the DOM
+        const initialReadingEl = document.getElementById('initial-reading');
+        const finalReadingEl = document.getElementById('final-reading');
+        const tariffValueEl = document.getElementById('tariff-value');
+        const vatRateValueEl = document.getElementById('vat-rate-value');
+
+        const consumptionEl = document.getElementById('consumption');
+        const energyChargeEl = document.getElementById('energy-charge');
+        const vatEl = document.getElementById('vat');
+        const totalAmountEl = document.getElementById('total-amount');
+
+        // Function to format numbers as Nigerian Naira
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-NG', {
+                style: 'currency',
+                currency: 'NGN',
+                minimumFractionDigits: 2
+            }).format(amount);
+        }
+
+        // Main calculation function
+        function calculateBill() {
+            // Get values, parse them as floats, and default to 0 if invalid
+            const initialReading = parseFloat(initialReadingEl.value) || 0;
+            const finalReading = parseFloat(finalReadingEl.value) || 0;
+            const tariff = parseFloat(tariffValueEl.innerText) || 209.5;
+            const vatRate = parseFloat(vatRateValueEl.innerText) || 7.5;
+
+            // --- Calculations ---
+            // 1. Consumption: Final - Initial. Ensure it's not negative.
+            const consumption = Math.max(0, finalReading - initialReading);
+
+            // 2. Energy Charge: Consumption * Tariff
+            const energyCharge = consumption * tariff;
+
+            // 3. VAT: 7.5% of Energy Charge
+            const vatAmount = energyCharge * (vatRate / 100);
+
+            // 4. Total Bill: Energy Charge + VAT
+            const totalAmount = energyCharge + vatAmount;
+
+            // --- Display Results ---
+            // Update the DOM with the calculated and formatted values
+            consumptionEl.innerText = consumption.toLocaleString(); // Format with commas
+            energyChargeEl.innerText = formatCurrency(energyCharge);
+            vatEl.innerText = formatCurrency(vatAmount);
+            totalAmountEl.innerText = formatCurrency(totalAmount);
+        }
+
+        // Add event listeners to input fields to trigger calculation on any change
+        initialReadingEl.addEventListener('input', calculateBill);
+        finalReadingEl.addEventListener('input', calculateBill);
+        
+        // Also listen for changes on the editable tariff and VAT rate spans
+        tariffValueEl.addEventListener('input', calculateBill);
+        vatRateValueEl.addEventListener('input', calculateBill);
+
+        // Initial calculation on page load
+        calculateBill();
+    </script>
+
+</body>
+</html>
